@@ -437,18 +437,27 @@ def search_kb(question, collection, model, top_k=3):
 # ==============================
 
 def classify_question(q):
-    q = q.lower()
-    excel_kw = ["ннзт","нэзт","назт","онзт","нвзт","январь","февраль","март","апрель",
-                "май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь",
-                "тэц","грэс","станци","топлив","сколько","значение","показател","данные"]
-    know_kw  = ["как","почему","что делать","рекоменд","метод","подход","принцип",
-                "системн","ситуацион","чс","аварий","управлен","решени","анализ",
-                "оценк","риск","действи","план","алгоритм","порядок"]
-    has_e = any(k in q for k in excel_kw)
-    has_k = any(k in q for k in know_kw)
-    if has_e and has_k: return "both"
-    if has_k: return "both"
-    if has_e: return "both"
+    try:
+        token = get_access_token()
+        r = requests.post(
+            "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
+            headers={"Authorization": f"Bearer {token}",
+                     "Content-Type": "application/json"},
+            json={"model": "GigaChat-Pro",
+                  "messages": [{"role": "user", "content":
+                      f"Определи тип вопроса. Ответь ТОЛЬКО одним словом: excel, knowledge или both.\n"
+                      f"excel — если спрашивают про цифры, статистику, нормативы, значения по станциям.\n"
+                      f"knowledge — если спрашивают про методы, определения, рекомендации, причины,причинно-следственные связи, действия.\n"
+                      f"both — если нужно и то и другое.\n"
+                      f"Вопрос: {q}"}],
+                  "max_tokens": 10, "temperature": 0},
+            verify=False, timeout=10
+        )
+        result = r.json()["choices"][0]["message"]["content"].strip().lower()
+        if result in ("excel", "knowledge", "both"):
+            return result
+    except Exception:
+        pass
     return "both"
 
 
