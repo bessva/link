@@ -447,8 +447,9 @@ def classify_question(q):
     has_e = any(k in q for k in excel_kw)
     has_k = any(k in q for k in know_kw)
     if has_e and has_k: return "both"
-    if has_k: return "knowledge"
-    return "excel"
+    if has_k: return "both"
+    if has_e: return "both"
+    return "both"
 
 
 SYSTEM_PROMPT = (
