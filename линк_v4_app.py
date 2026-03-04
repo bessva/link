@@ -594,7 +594,7 @@ if submitted and user_input.strip():
                     result = cs["data"]["calc_function"](**cs["collected_params"])
                     answer = (f"📐 Формула: {cs['data']['formula']}\n"
                               f"Параметры: {cs['collected_params']}\n\n"
-                              f"✅ Результат: **{result:.3f} т.н.т.**")
+                              f"✅ Результат: {result:.3f} т.н.т.")
                 except Exception as e:
                     answer = f"❌ Ошибка расчёта: {e}"
                 st.session_state.calc_state = None
@@ -602,7 +602,7 @@ if submitted and user_input.strip():
             else:
                 # Запрашиваем следующий параметр
                 next_param = remaining[0]
-                answer = f"Принято. Теперь введите: **{cs['data']['param_prompts'][next_param]}**"
+                answer = f"Принято. Теперь введите: {cs['data']['param_prompts'][next_param]}"
                 st.session_state.history.append((user_input, answer, "calc"))
         else:
             answer = "⚠️ Не распознано число. Введите числовое значение."
@@ -625,7 +625,7 @@ if submitted and user_input.strip():
                     result = calc_data["calc_function"](**params)
                     answer = (f"📐 Формула: {calc_data['formula']}\n"
                               f"Параметры: {params}\n\n"
-                              f"✅ Результат: **{result:.3f} т.н.т.**")
+                              f"✅ Результат: {result:.3f} т.н.т.")
                 except Exception as e:
                     answer = f"❌ Ошибка расчёта: {e}"
                 st.session_state.history.append((user_input, answer, "calc"))
@@ -637,8 +637,8 @@ if submitted and user_input.strip():
                     "data": calc_data,
                     "collected_params": {}
                 }
-                answer = (f"📐 Запускаю расчёт по формуле: **{calc_data['formula']}**\n\n"
-                          f"Введите: **{calc_data['param_prompts'][first_param]}**")
+                answer = (f"📐 Запускаю расчёт по формуле: {calc_data['formula']}\n\n"
+                          f"Введите: {calc_data['param_prompts'][first_param]}")
                 st.session_state.history.append((user_input, answer, "calc"))
 
         else:
