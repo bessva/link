@@ -200,36 +200,21 @@ def load_excel_data(folder):
     for filepath in glob.glob(os.path.join(folder, "*.xlsx")):
         try:
             wb = openpyxl.load_workbook(filepath, data_only=True)
+            filename = os.path.basename(filepath)
             for sheet_name in wb.sheetnames:
                 ws = wb[sheet_name]
                 rows = list(ws.iter_rows(values_only=True))
-                if len(rows) < 3:
+                if not rows:
                     continue
-                headers    = rows[0]
-                col_tes    = _find_col(headers, ["наименование тэс", "наименование"])
-                col_month  = _find_col(headers, ["месяц"])
-                col_fuel   = _find_col(headers, ["вид топлива"])
-                sheet_upper = sheet_name.upper()
-                result_col = None
-                if "ННЗТ" in sheet_upper: result_col = _find_col(headers, ["ннзт"])
-                elif "НЭЗТ" in sheet_upper: result_col = _find_col(headers, ["нэзт, т.н.т", "нэзт"])
-                elif "НАЗТ" in sheet_upper: result_col = _find_col(headers, ["назт, т.н.т", "назт"])
-                elif "ОНЗТ" in sheet_upper: result_col = _find_col(headers, ["онзт, т.н.т", "онзт"])
-                if result_col is None or col_month is None:
-                    continue
-                current_tes = current_fuel = None
-                for row in rows[2:]:
-                    if col_tes is not None and row[col_tes]:
-                        current_tes = str(row[col_tes]).strip()
-                    if col_fuel is not None and row[col_fuel]:
-                        current_fuel = str(row[col_fuel]).strip()
-                    month_val = row[col_month] if col_month is not None else None
-                    result    = row[result_col]
-                    if not current_tes or not month_val or result is None:
-                        continue
-                    all_data.setdefault(current_tes, {}).setdefault(sheet_upper, {})[str(month_val).strip()] = {
-                        "value": round(float(result), 3), "fuel": current_fuel or "—"
-                    }
+                # Собираем весь лист как текст
+                lines = []
+                for row in rows:
+                    cells = [str(c) if c is not None else "" for c in row]
+                    line = " | ".join(cells).strip(" |")
+                    if line:
+                        lines.append(line)
+                key = f"{filename} — лист {sheet_name}"
+                all_data[key] = "\n".join(lines)
         except Exception:
             pass
     return all_data
@@ -237,23 +222,16 @@ def load_excel_data(folder):
 
 def find_relevant_excel(excel_data, question):
     q = question.lower()
-    norm_types = [n for n in ["ННЗТ","НЭЗТ","НАЗТ","ОНЗТ"] if n.lower() in q] or ["ННЗТ","НЭЗТ","НАЗТ","ОНЗТ"]
-    months_ru  = ["январь","февраль","март","апрель","май","июнь",
-                  "июль","август","сентябрь","октябрь","ноябрь","декабрь"]
-    target_months   = [m.capitalize() for m in months_ru if m in q]
-    target_stations = [t for t in excel_data if any(w[:5] in q for w in t.lower().split() if len(w) > 4)] or list(excel_data.keys())
-    lines = []
-    for tes in target_stations:
-        block = [f"📍 {tes}:"]
-        for norm in norm_types:
-            if norm in excel_data.get(tes, {}):
-                block.append(f"  {norm}:")
-                for month, info in excel_data[tes][norm].items():
-                    if not target_months or month in target_months:
-                        block.append(f"    {month}: {info['value']} т.н.т.")
-        if len(block) > 1:
-            lines.extend(block)
-    return "\n".join(lines)
+    result_parts = []
+    for sheet_key, text in excel_data.items():
+        # Проверяем есть ли хоть какое-то совпадение с вопросом
+        words = [w for w in q.split() if len(w) > 3]
+        if any(w[:5] in sheet_key.lower() or w[:5] in text.lower()[:500] for w in words):
+            result_parts.append(f"=== {sheet_key} ===\n{text}")
+    if not result_parts:
+        # Если ничего не нашли — отдаём всё
+        result_parts = [f"=== {k} ===\n{v}" for k, v in excel_data.items()]
+    return "\n\n".join(result_parts)
 
 
 # ==============================
