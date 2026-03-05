@@ -252,6 +252,21 @@ def find_relevant_excel(excel_data, question):
 # ==============================
 
 def extract_pdf(path):
+    # Сначала пробуем pymupdf — лучше справляется с нестандартными шрифтами
+    try:
+        import fitz
+        doc = fitz.open(path)
+        text = ""
+        for page in doc:
+            t = page.get_text()
+            if t: text += t + "\n"
+        doc.close()
+        if text.strip():
+            return text
+    except Exception:
+        pass
+
+    # Запасной вариант — pdfplumber
     try:
         import pdfplumber
         text = ""
