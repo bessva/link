@@ -17,7 +17,7 @@ from datetime import datetime
 # ⚙️ НАСТРОЙКИ
 # ==============================
 
-GIGACHAT_AUTH_KEY = "MDE5Y2E1MTQtMzEzYS03NzRkLTk0NWEtYTk0YjU0ZGFlMmM3OmE2ODk0ZjViLTMyMmMtNDUwYy1hZTdiLTRlY2ZiOGMxMTdlNw=="
+GIGACHAT_AUTH_KEY = st.secrets["MDE5Y2E1MTQtMzEzYS03NzRkLTk0NWEtYTk0YjU0ZGFlMmM3OmE2ODk0ZjViLTMyMmMtNDUwYy1hZTdiLTRlY2ZiOGMxMTdlNw=="]
 
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR      = os.path.join(BASE_DIR, "data")
