@@ -490,12 +490,12 @@ with st.sidebar:
     st.markdown('<div class="sidebar-section">Станции</div>', unsafe_allow_html=True)
     if excel_data:
     # Показываем только уникальные имена файлов без листов
-    seen = set()
+        seen = set()
         for key in excel_data.keys():
-        filename = key.split("___")[0].replace(".xlsx", "")
+            filename = key.split("___")[0].replace(".xlsx", "")
             if filename not in seen:
-            seen.add(filename)
-            st.markdown(f'<div class="sidebar-item sidebar-item-active">🏭 {filename}</div>', unsafe_allow_html=True)
+                seen.add(filename)
+                st.markdown(f'<div class="sidebar-item sidebar-item-active">🏭 {filename}</div>', unsafe_allow_html=True)
     else:
         st.markdown('<div class="sidebar-item">Нет данных в папке data/</div>', unsafe_allow_html=True)
 
