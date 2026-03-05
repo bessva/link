@@ -208,7 +208,7 @@ def load_excel_data(folder):
                     continue
 
                 # Заголовки — обрезаем до 30 символов
-                headers = [str(h)[:30] if h else f"col_{i}" for i, h in enumerate(rows[0])]
+                headers = [str(h)[:80] if h else f"col_{i}" for i, h in enumerate(rows[0])]
 
                 # Читаем данные с forward-fill по первым 4 колонкам (название, топливо и т.д.)
                 prev = [None] * len(headers)
