@@ -655,6 +655,7 @@ if submitted and user_input.strip():
             with st.spinner("Думаю..."):
                 try:
                     answer = call_gigachat(SYSTEM_PROMPT, user_message, st.session_state.history)
+                    answer = re.sub(r'\*+', '', answer)
                 except Exception as e:
                     answer = f"❌ Ошибка: {e}"
 
