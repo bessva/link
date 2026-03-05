@@ -204,16 +204,31 @@ def load_excel_data(folder):
             for sheet_name in wb.sheetnames:
                 ws = wb[sheet_name]
                 rows = list(ws.iter_rows(values_only=True))
-                if not rows:
+                if len(rows) < 2:
                     continue
-                # Собираем весь лист как текст
-                lines = []
-                for row in rows:
-                    cells = [str(c) if c is not None else "" for c in row]
-                    line = " | ".join(cells).strip(" |")
-                    if line:
-                        lines.append(line)
-                key = f"{filename} — лист {sheet_name}"
+
+                # Заголовки — обрезаем до 30 символов
+                headers = [str(h)[:30] if h else f"col_{i}" for i, h in enumerate(rows[0])]
+
+                # Читаем данные с forward-fill по первым 4 колонкам (название, топливо и т.д.)
+                prev = [None] * len(headers)
+                lines = [" | ".join(headers)]
+
+                for row in rows[2:]:  # пропускаем заголовок и пустую строку
+                    filled = []
+                    for i, c in enumerate(row):
+                        if c is not None:
+                            prev[i] = c
+                            filled.append(str(c))
+                        elif i < 4 and prev[i] is not None:
+                            filled.append(str(prev[i]))
+                        else:
+                            filled.append("")
+                    # Пропускаем полностью пустые строки
+                    if any(v for v in filled):
+                        lines.append(" | ".join(filled))
+
+                key = f"{filename}___{sheet_name}"
                 all_data[key] = "\n".join(lines)
         except Exception:
             pass
@@ -224,12 +239,10 @@ def find_relevant_excel(excel_data, question):
     q = question.lower()
     result_parts = []
     for sheet_key, text in excel_data.items():
-        # Проверяем есть ли хоть какое-то совпадение с вопросом
         words = [w for w in q.split() if len(w) > 3]
-        if any(w[:5] in sheet_key.lower() or w[:5] in text.lower()[:500] for w in words):
+        if any(w[:5] in sheet_key.lower() or w[:5] in text[:300].lower() for w in words):
             result_parts.append(f"=== {sheet_key} ===\n{text}")
     if not result_parts:
-        # Если ничего не нашли — отдаём всё
         result_parts = [f"=== {k} ===\n{v}" for k, v in excel_data.items()]
     return "\n\n".join(result_parts)
 
